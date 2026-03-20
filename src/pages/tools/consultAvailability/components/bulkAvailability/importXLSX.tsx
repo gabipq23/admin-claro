@@ -17,6 +17,9 @@ export default function ImportXLSX() {
   const clearOriginalDados = useBulkAvailabilityStore(
     (state) => state.clearOriginalDados,
   );
+  const clearBulkResponse = useBulkAvailabilityStore(
+    (state) => state.clearBulkResponse,
+  );
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -31,6 +34,7 @@ export default function ImportXLSX() {
           const jsonData: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1 });
 
           clearOriginalDados();
+          clearBulkResponse();
           setInfo(jsonData);
         }
       };
@@ -67,7 +71,7 @@ export default function ImportXLSX() {
 
     consultBulk({
       dados: processedData,
-      limite: 50,
+      limite: processedData.length,
       page: 1,
     });
   };
@@ -89,11 +93,11 @@ export default function ImportXLSX() {
             theme={{
               components: {
                 Input: {
-                  activeBorderColor: "#da291c",
-                  hoverBorderColor: "#da291c",
+                  activeBorderColor: "#660099",
+                  hoverBorderColor: "#660099",
                 },
                 Button: {
-                  colorPrimary: "#da291c",
+                  colorPrimary: "#660099",
                   colorPrimaryHover: "#cb1ef5",
                 },
               },
@@ -127,9 +131,9 @@ export default function ImportXLSX() {
                   loading={isConsulting}
                   disabled={isConsulting || info.length <= 1}
                   style={{
-                    backgroundColor: "#da291c",
+                    backgroundColor: "#660099",
                     color: "white",
-                    borderColor: "#da291c",
+                    borderColor: "#660099",
                     borderTopLeftRadius: 0,
                     borderBottomLeftRadius: 0,
                     height: "32px",

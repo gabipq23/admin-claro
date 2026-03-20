@@ -11,7 +11,6 @@ import {
   useExportAvailabilityTXTController,
 } from "../../controller/exportSearch";
 import { useSearchAvailabilityController } from "../../controller/searchAvailabilityController";
-import { defaultOutlineButtonClass } from "@/utils/buttonStyles";
 interface SearchParams {
   uf?: string;
   cidade?: string;
@@ -159,7 +158,7 @@ export default function ResultSearchAvailability() {
               theme={{
                 components: {
                   Button: {
-                    colorBorder: "#da291c",
+                    colorBorder: "#660099",
                     colorText: "#fff",
                     colorPrimaryHover: "#fff",
                     colorPrimaryBorderHover: "#cb1ef5",
@@ -175,8 +174,8 @@ export default function ResultSearchAvailability() {
                 onClick={handleExport}
                 disabled={!searchData?.dados || searchData.dados.length === 0}
                 style={{
-                  backgroundColor: "#da291c",
-                  borderColor: "#da291c",
+                  backgroundColor: "#660099",
+                  borderColor: "#660099",
                 }}
               >
                 {isExporting ? "Exportando..." : `Exportar em .xlsx`}
@@ -189,8 +188,8 @@ export default function ResultSearchAvailability() {
                 onClick={handleExportCSV}
                 disabled={!searchData?.dados || searchData.dados.length === 0}
                 style={{
-                  backgroundColor: "#da291c",
-                  borderColor: "#da291c",
+                  backgroundColor: "#660099",
+                  borderColor: "#660099",
                 }}
               >
                 {isExportingCSV ? "Exportando..." : `Exportar em .csv`}
@@ -203,8 +202,8 @@ export default function ResultSearchAvailability() {
                 onClick={handleExportTXT}
                 disabled={!searchData?.dados || searchData.dados.length === 0}
                 style={{
-                  backgroundColor: "#da291c",
-                  borderColor: "#da291c",
+                  backgroundColor: "#660099",
+                  borderColor: "#660099",
                 }}
               >
                 {isExportingTXT ? "Exportando..." : `Exportar em .txt`}
@@ -216,15 +215,15 @@ export default function ResultSearchAvailability() {
                 theme={{
                   components: {
                     Checkbox: {
-                      colorPrimary: "#da291c",
-                      colorPrimaryHover: "#da291c",
+                      colorPrimary: "#660099",
+                      colorPrimaryHover: "#660099",
                       borderRadius: 4,
                       controlInteractiveSize: 18,
                       lineWidth: 2,
                     },
                     Button: {
-                      colorBorder: "#da291c",
-                      colorText: "#da291c",
+                      colorBorder: "#660099",
+                      colorText: "#660099",
                       colorPrimaryHover: "#cb1ef5",
                       colorPrimaryBorderHover: "#cb1ef5",
                     },
@@ -271,7 +270,7 @@ export default function ResultSearchAvailability() {
                   )}
                   trigger={["click", "hover"]}
                 >
-                  <Button className={defaultOutlineButtonClass}>Selecionar Colunas</Button>
+                  <Button>Selecionar Colunas</Button>
                 </Dropdown>
               </ConfigProvider>
             </div>
@@ -279,8 +278,8 @@ export default function ResultSearchAvailability() {
               theme={{
                 components: {
                   Button: {
-                    colorBorder: "#da291c",
-                    colorText: "#da291c",
+                    colorBorder: "#660099",
+                    colorText: "#660099",
                     colorPrimaryHover: "#cb1ef5",
                     colorPrimaryBorderHover: "#cb1ef5",
                   },
@@ -289,8 +288,9 @@ export default function ResultSearchAvailability() {
             >
               <div className=" self-end">
                 <Button
-                  className={defaultOutlineButtonClass}
-
+                  type="default"
+                  variant="solid"
+                  className=""
                   onClick={() => {
                     navigate("/admin/consulta-disponibilidade");
                   }}
@@ -307,15 +307,15 @@ export default function ResultSearchAvailability() {
           locale={customLocale}
           theme={{
             token: {
-              colorPrimary: "#da291c",
-              colorPrimaryHover: "#da291c",
-              colorLink: "#da291c",
+              colorPrimary: "#660099",
+              colorPrimaryHover: "#833baa",
+              colorLink: "#660099",
               colorPrimaryBg: "transparent",
             },
             components: {
               Checkbox: {
-                colorPrimary: "#da291c",
-                colorPrimaryHover: "#da291c",
+                colorPrimary: "#660099",
+                colorPrimaryHover: "#660099",
                 borderRadius: 4,
                 controlInteractiveSize: 18,
                 lineWidth: 2,
