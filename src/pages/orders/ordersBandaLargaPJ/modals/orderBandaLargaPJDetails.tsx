@@ -134,15 +134,15 @@ export function OrderBandaLargaPJDetailsModal({
 
         installation_preferred_period_two:
           localData.installation_preferred_period_two,
-
+        wants_esim: localData.wants_esim,
+        line_number_informed: localData.line_number_informed,
+        line_action: localData.line_action,
+        address_reference_point: localData.address_reference_point,
         due_day: localData.due_day,
         accept_offers: localData.accept_offers,
         terms_accepted: localData.terms_accepted,
         url: localData.url,
         status: localData.status,
-        cnpj: localData.cnpj,
-        company_legal_name: localData.company_legal_name,
-        manager_name: localData.manager_name,
       });
     }
   }, [localData, isEditing, form]);
@@ -161,15 +161,16 @@ export function OrderBandaLargaPJDetailsModal({
         address_number: values.address_number,
         address_complement: values.address_complement,
         address_lot: values.address_lot,
+        address_reference_point: values.address_reference_point,
+        wants_esim: values.wants_esim,
+        line_number_informed: values.line_number_informed,
+        line_action: values.line_action,
         address_floor: values.address_floor,
         address_block: values.address_block,
         building_or_house: values.building_or_house,
         zip_code: values.zip_code,
         single_zip_code: values.single_zip_code,
         due_day: values.due_day,
-        company_legal_name: values.company_legal_name,
-        cnpj: values.cnpj,
-        manager_name: values.manager_name,
       };
 
       let selectedPlan = planBLPJStock.find(

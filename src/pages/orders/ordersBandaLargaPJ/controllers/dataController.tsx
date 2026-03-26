@@ -48,7 +48,7 @@ export function useAllOrdersController() {
           after_sales_status: filters.after_sales_status,
           order: filters.order,
           sort: filters.sort,
-          order_number: filters.order_number
+          order_number: filters.order_number, type_client: "PJ",
         });
 
         return response;
@@ -110,7 +110,15 @@ export function useAllOrdersController() {
   });
 
   const orderBandaLargaPJ = ordersBandaLarga?.orders?.filter(
-    (order) => order.client_type === "PJ"
+    (order) =>
+      // order.company === "CLARO" &&
+      // order.category === "Banda Larga" &&
+      order.client_type === "PJ"
+    // &&
+    // order.landing_page === "banda-larga"
+    // ainda teria que entra aqui o business_partner
+    // mas o ideal é ja mandar eles filtrados na query
+
   );
 
   const updateDataIdCRMAndConsultorResponsavel = (

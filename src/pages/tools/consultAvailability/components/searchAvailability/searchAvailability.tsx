@@ -118,12 +118,12 @@ export default function SearchAvailability() {
           theme={{
             components: {
               Input: {
-                activeBorderColor: "#660099",
-                hoverBorderColor: "#660099",
+                activeBorderColor: "#b41e13",
+                hoverBorderColor: "#b41e13",
               },
               Select: {
-                hoverBorderColor: "#660099",
-                activeBorderColor: "#660099",
+                hoverBorderColor: "#b41e13",
+                activeBorderColor: "#b41e13",
                 activeOutlineColor: "none",
                 optionSelectedBg: "#e6e6e6",
               },
@@ -198,7 +198,7 @@ export default function SearchAvailability() {
                     htmlType="submit"
                     loading={isSearchLoading}
                     style={{
-                      backgroundColor: "#660099",
+                      backgroundColor: "#b41e13",
                       color: "white",
                       borderColor: "#000000",
                       borderTopLeftRadius: 0,

@@ -16,6 +16,8 @@ export class BandaLargaService {
     order,
     sort,
     order_number,
+    type_client,
+    client_type,
   }: {
     page?: string | number;
     per_page?: string | number;
@@ -30,8 +32,12 @@ export class BandaLargaService {
     order?: string;
     sort?: string;
     order_number?: string;
+    type_client?: string;
+    client_type?: string;
   }): Promise<OrderBandaLargaPFResponse> {
-    const res = await apiPurchase.get(`/claro/orders`, {
+    const clientTypeFilter = type_client || client_type;
+
+    const res = await apiPurchase.get(`/brisanet/orders`, {
       params: {
         page,
         per_page,
@@ -46,6 +52,8 @@ export class BandaLargaService {
         order,
         sort,
         order_number,
+        type_client: clientTypeFilter,
+        client_type: clientTypeFilter,
       },
     });
 
@@ -53,14 +61,14 @@ export class BandaLargaService {
   }
 
   async updateBandaLargaOrderInfo(id: number, data: any): Promise<any> {
-    const response = await apiPurchase.put(`/claro/orders/${id}`, data);
+    const response = await apiPurchase.put(`/brisanet/orders/${id}`, data);
     return response.data;
   }
   async removeBandaLargaOrder(id: number) {
-    await apiPurchase.delete(`/claro/orders/${id}`);
+    await apiPurchase.delete(`/brisanet/orders/${id}`);
   }
 
   async changeBandaLargaOrderStatus(id: number, data: { status: string }) {
-    await apiPurchase.patch(`/claro/orders/${id}/status`, data);
+    await apiPurchase.patch(`/brisanet/orders/${id}/status`, data);
   }
 }
