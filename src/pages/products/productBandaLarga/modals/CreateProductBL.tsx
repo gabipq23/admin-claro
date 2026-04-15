@@ -135,8 +135,8 @@ export default function CreateProductBL({
                 && values.pricing_base_monthly_original !== "";
 
             const payload = {
-                company: "TIM",
-                business_partner: "TIM",
+                company: "CLARO",
+                business_partner: "CLARO",
                 category: "Banda Larga",
                 landing_page: "banda_larga",
                 client_type: values.client_type || "",
