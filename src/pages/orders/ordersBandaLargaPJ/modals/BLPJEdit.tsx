@@ -3,19 +3,34 @@ import {
   Form,
   Select,
   DatePicker,
+  Checkbox,
 } from "antd";
 import { FormInstance } from "antd/es/form";
-import { OrderBandaLargaPJ } from "@/interfaces/bandaLargaPJ";
 import InputGenerator from "@/components/inputGenerator";
 import { defaultOutlineButtonClass } from "@/utils/buttonStyles";
 import { formatCPF } from "@/utils/formatCPF";
 import { formatPhoneNumber } from "@/utils/formatPhoneNumber";
+import { OrderBandaLarga, PlanSelectedExtra } from "@/interfaces/orderBandaLarga";
+import { useCallback, useEffect, useState } from "react";
+
+interface PlanOption {
+  value: number | string;
+  label: string;
+  name: string;
+  price: number;
+  plan: {
+    online?: boolean;
+    extras?: {
+      non_client?: PlanSelectedExtra[];
+    };
+  };
+}
 
 interface OrderBandaLargaPJEditProps {
-  localData: OrderBandaLargaPJ;
+  localData: OrderBandaLarga;
   form: FormInstance;
   onPlanChange: (planId: number) => void;
-  planOptions: any;
+  planOptions: PlanOption[];
   handleSave: () => void;
   handleCancel: () => void;
   loading: boolean;
@@ -30,6 +45,31 @@ export function OrderBandaLargaPJEdit({
   handleCancel,
   loading,
 }: OrderBandaLargaPJEditProps) {
+  const [extrasOptions, setExtrasOptions] = useState<PlanSelectedExtra[]>([]);
+  const selectedPropertyType =
+    Form.useWatch(["address_complement", "building_or_house"], form) ||
+    localData.address_complement?.building_or_house ||
+    localData.building_or_house ||
+    "house";
+  const handlePlanChange = useCallback((planId: number) => {
+    onPlanChange(planId);
+    const found = planOptions.find((p) => p.value === planId);
+    if (found && found.plan && found.plan.online) {
+      setExtrasOptions(found.plan.extras?.non_client || []);
+
+    } else {
+      setExtrasOptions([]);
+    }
+  }, [onPlanChange, planOptions]);
+
+
+  useEffect(() => {
+    const currentExtras = form.getFieldValue("selected_extras");
+    if ((!currentExtras || currentExtras.length === 0) && localData.selected_extras && Array.isArray(localData.selected_extras)) {
+      const selectedIds = localData.selected_extras.map((extra: PlanSelectedExtra) => extra.id);
+      form.setFieldsValue({ selected_extras: selectedIds });
+    }
+  }, [localData, form]);
   return (
     <Form
       form={form}
@@ -47,7 +87,7 @@ export function OrderBandaLargaPJEdit({
           <div className="mt-4 flex w-full flex-col  text-neutral-700">
             {/* Header da tabela */}
             <div className="flex items-center  px-8 justify-between font-semibold text-[#666666] text-[14px]">
-              <p className="w-66 text-center">Plano</p>
+              <p className="w-72 text-center">Plano</p>
               <p className="w-28 text-center">Data Instalação 1</p>
               <p className="w-20 text-center">Período 1</p>
               <p className="w-28 text-center">Data Instalação 2</p>
@@ -59,14 +99,14 @@ export function OrderBandaLargaPJEdit({
             {/* Linha editável */}
             <div className="flex px-8 items-center justify-between py-4 pb-0 text-[14px]">
               {/* Plano */}
-              <div className="w-66 flex justify-center">
+              <div className="w-72 flex justify-center">
                 <Form.Item name="plan_id" className="mb-0">
                   <Select
                     size="small"
                     showSearch
                     placeholder="Selecione o plano"
-                    className="min-w-64"
-                    onChange={onPlanChange}
+                    className="min-w-72"
+                    onChange={handlePlanChange}
                     options={planOptions}
                   />
                 </Form.Item>
@@ -160,54 +200,27 @@ export function OrderBandaLargaPJEdit({
             </div>
             <hr className="border-t border-neutral-300 mx-2" />
           </div>
-          {/* Detalhes adicionais em lista */}
-          <div className="mt-4  rounded-md p-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              <div className="flex h-9 gap-4 text-[14px] w-full text-neutral-700">
-                <div className="flex">
-                  <p><strong>Escolha:</strong></p>
-                </div>
-                <div className="flex flex-1">
-                  <Form.Item name="line_action" className="mb-0">
-                    <Select
-                      size="small"
-                      placeholder="Selecione"
-                      className="min-w-[200px]"
-                    >
-                      <Select.Option value="new_number">Novo Número</Select.Option>
-                      <Select.Option value="port_in_to_vivo">Portabilidade para Vivo</Select.Option>
-                      <Select.Option value="keep_vivo_number">Manter Número Vivo</Select.Option>
-                    </Select>
-                  </Form.Item>
-                </div>
-              </div>
 
-              <InputGenerator
-                title="Número Informado:"
-                formItemName="line_number_informed"
-                formItemValue={localData.line_number_informed || ""}
-                placeholder="Número"
-              />
-
-              <div className="flex h-9 gap-4 text-[14px] w-full text-neutral-700">
-                <div className="flex">
-                  <p><strong>eSIM:</strong></p>
-                </div>
-                <div className="flex flex-1">
-                  <Form.Item name="wants_esim" className="mb-0">
-                    <Select
-                      size="small"
-                      placeholder="Selecione"
-                      className="min-w-[150px]"
-                    >
-                      <Select.Option value={true}>Sim</Select.Option>
-                      <Select.Option value={false}>Não</Select.Option>
-                    </Select>
-                  </Form.Item>
-                </div>
-              </div>
+          {extrasOptions.length > 0 && (
+            <div className="mt-4 bg-neutral-50 rounded-md p-4">
+              <div className="font-semibold text-[#666666] text-[14px] mb-2">Extras disponíveis</div>
+              {/* Agrupa todos os checkboxes em um Checkbox.Group controlado por selected_extras */}
+              <Form.Item name="selected_extras" valuePropName="value" className="mb-0">
+                <Checkbox.Group style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {extrasOptions.map((extra, idx) => (
+                    <Checkbox key={extra.id + '-' + idx} value={extra.id}>
+                      <span className="font-medium text-sm">{extra.label}</span>
+                      {extra.options && extra.options[0] && (
+                        <>
+                          &nbsp; R${extra.options[0].price} <span className="text-xs text-neutral-600">{extra.options[0].description}</span>
+                        </>
+                      )}
+                    </Checkbox>
+                  ))}
+                </Checkbox.Group>
+              </Form.Item>
             </div>
-          </div>
+          )}
         </div>
         {/* Seção de Disponibilidade */}
         <div className="flex flex-col bg-neutral-100 mb-3 rounded-[4px] p-3 pb-0 w-full">
@@ -228,6 +241,7 @@ export function OrderBandaLargaPJEdit({
             </div>
           </div>
         </div>
+
 
         {/* Informações da Empresa */}
         <div className="flex flex-col bg-neutral-100 mb-3 rounded-[4px] p-3  w-full">
@@ -341,36 +355,74 @@ export function OrderBandaLargaPJEdit({
                   formItemValue={localData.address_number || ""}
                   placeholder="Número"
                 />
-                <InputGenerator
-                  title="Complemento:"
-                  formItemName="address_complement"
-                  formItemValue={localData.address_complement || ""}
-                  placeholder="Complemento"
-                />
+
+                {selectedPropertyType === "house" ? (
+                  <InputGenerator
+                    title="Complemento:"
+                    formItemName={["address_complement", "home_complement"]}
+                    formItemValue={localData.address_complement?.home_complement || ""}
+                    placeholder="Complemento"
+                  />
+                ) : (
+                  <>
+                    <div className="flex h-9 gap-4 text-[14px] w-full text-neutral-700">
+                      <div className="flex ">
+                        <p>
+                          <strong>Tipo da unidade:</strong>
+                        </p>
+                      </div>
+                      <div className="flex flex-1">
+                        <Form.Item
+                          name={["address_complement", "unit_type"]}
+                          className="mb-0 "
+                        >
+                          <Select
+                            placeholder="Tipo da unidade"
+                            className="min-w-[150px]"
+                            size="small"
+                          >
+                            <Select.Option value="apto">Apartamento</Select.Option>
+                            <Select.Option value="sala">Sala</Select.Option>
+                            <Select.Option value="conjunto">Conjunto</Select.Option>
+                            <Select.Option value="loja">Loja</Select.Option>
+                            <Select.Option value="outros">Outros</Select.Option>
+                          </Select>
+                        </Form.Item>
+                      </div>
+                    </div>
+                    <InputGenerator
+                      title="Número da unidade:"
+                      formItemName={["address_complement", "unit_number"]}
+                      formItemValue={localData.address_complement?.unit_number || ""}
+                      placeholder="Ex: 1203"
+                    />
+                  </>
+                )}
+
                 <InputGenerator
                   title="Andar:"
-                  formItemName="address_floor"
-                  formItemValue={localData.address_floor || ""}
+                  formItemName={["address_complement", "floor"]}
+                  formItemValue={localData.address_complement?.floor || localData.address_floor || ""}
                   placeholder="Andar"
                 />
                 <InputGenerator
                   title="Lote:"
-                  formItemName="address_lot"
-                  formItemValue={localData.address_lot || ""}
+                  formItemName={["address_complement", "lot"]}
+                  formItemValue={localData.address_complement?.lot || localData.address_lot || ""}
                   placeholder="Lote"
                 />
 
                 <InputGenerator
                   title="Quadra:"
-                  formItemName="address_block"
-                  formItemValue={localData.address_block || ""}
+                  formItemName={["address_complement", "square"]}
+                  formItemValue={localData.address_complement?.square || localData.address_block || ""}
                   placeholder="Quadra"
                 />
 
                 <InputGenerator
                   title="Ponto de Referência"
-                  formItemName="address_reference_point"
-                  formItemValue={localData.address_reference_point || ""}
+                  formItemName={["address_complement", "reference_point"]}
+                  formItemValue={localData.address_complement?.reference_point || localData.address_reference_point || ""}
                   placeholder="Ponto de Referência"
                 />
               </div>
@@ -384,7 +436,7 @@ export function OrderBandaLargaPJEdit({
                     </p>
                   </div>
                   <div className="flex flex-1">
-                    <Form.Item name="building_or_house" className="mb-0 ">
+                    <Form.Item name={["address_complement", "building_or_house"]} className="mb-0 ">
                       <Select
                         placeholder="Tipo de imóvel"
                         className="min-w-[150px]"

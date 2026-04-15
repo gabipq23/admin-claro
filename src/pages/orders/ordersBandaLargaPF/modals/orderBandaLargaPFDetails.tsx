@@ -1,13 +1,14 @@
 import { ConfigProvider, Modal, Form } from "antd";
 import { useState, useEffect } from "react";
-import { OrderBandaLargaPF } from "@/interfaces/bandaLargaPF";
 import { OrderBandaLargaPFDisplay } from "./BLPFDisplay";
 import { OrderBandaLargaPFEdit } from "./BLPFEdit";
-import HeaderInputs from "./headerInputs";
+
 import dayjs from "dayjs";
 import ConfirmDeleteModal from "@/components/confirmDeleteModal";
 import FooterButtons from "@/components/orders/footerButtons";
 import { generatePDF } from "../controllers/exportPDF";
+import HeaderInputs from "@/components/orders/headerInputs";
+import { OrderBandaLarga } from "@/interfaces/orderBandaLarga";
 
 export function OrderBandaLargaPFDetailsModal({
   isModalOpen,
@@ -23,7 +24,7 @@ export function OrderBandaLargaPFDetailsModal({
 }: {
   isModalOpen: boolean;
   closeModal: () => void;
-  selectedId: OrderBandaLargaPF | null;
+  selectedId: OrderBandaLarga | null;
   updateOrderData?: (params: { id: number; data: any }) => void;
   removeOrderData: any;
   isRemoveOrderFetching: boolean;
@@ -34,7 +35,7 @@ export function OrderBandaLargaPFDetailsModal({
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [localData, setLocalData] = useState<OrderBandaLargaPF | null>(null);
+  const [localData, setLocalData] = useState<OrderBandaLarga | null>(null);
   const [form] = Form.useForm();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [consultor, setConsultor] = useState<string>("");
@@ -50,14 +51,15 @@ export function OrderBandaLargaPFDetailsModal({
   }, [selectedId]);
 
   const planOptions = Array.isArray(planBLPFStock)
-    ? planBLPFStock.map((plan: any) => ({
-      value: plan.id,
-      label: `${plan.plan_name} 
-        } - R$ ${plan.value}`,
-      name: plan.plan_name,
-      price: plan.value,
-
-    }))
+    ? planBLPFStock
+      .filter((plan: any) => plan.client_type === 'PF' && plan.online === true && plan.uf.includes(localData?.state || ""))
+      .map((plan: any) => ({
+        value: plan.id,
+        label: plan.name + " " + plan.pricing?.base_monthly?.current_price,
+        name: plan.name + " " + plan.pricing?.base_monthly?.current_price,
+        price: plan.pricing?.base_monthly?.current_price,
+        plan,
+      }))
     : [];
 
   const handlePlanChange = (planId: number) => {
@@ -69,19 +71,21 @@ export function OrderBandaLargaPFDetailsModal({
         id: localData?.plan?.id || "",
       });
 
-      setLocalData((prev) =>
-        prev
-          ? {
-            ...prev,
-            plan: {
-              name: selectedPlan.name,
-              value: parseFloat(selectedPlan.value),
-
-              id: selectedPlan.value,
-            },
-          }
-          : null,
-      );
+      setLocalData((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          plan: {
+            name: selectedPlan.name,
+            value: parseFloat(selectedPlan.value),
+            id: selectedPlan.value,
+          },
+          price_summary: {
+            ...prev.price_summary,
+            plan_price: selectedPlan.price,
+          },
+        };
+      });
     }
   };
 
@@ -96,6 +100,8 @@ export function OrderBandaLargaPFDetailsModal({
 
   useEffect(() => {
     if (localData && isEditing) {
+      const addressComplement = localData.address_complement || null;
+
       form.setFieldsValue({
         plan_id: localData.plan?.id || "",
         plan_name: localData.plan?.name || "",
@@ -109,8 +115,17 @@ export function OrderBandaLargaPFDetailsModal({
         email: localData.email,
         address: localData.address,
         address_number: localData.address_number,
-        address_complement: localData.address_complement,
-        address_lot: localData.address_lot,
+        address_complement: {
+          lot: addressComplement?.lot || localData.address_lot || "",
+          block: addressComplement?.block || localData.address_block || "",
+          floor: addressComplement?.floor || localData.address_floor || "",
+          square: addressComplement?.square || localData.address_block || "",
+          unit_type: addressComplement?.unit_type || "",
+          unit_number: addressComplement?.unit_number || "",
+          building_or_house: addressComplement?.building_or_house || localData.building_or_house || "house",
+          home_complement: addressComplement?.home_complement || "",
+          reference_point: addressComplement?.reference_point || localData.address_reference_point || "",
+        }, address_lot: localData.address_lot,
         address_floor: localData.address_floor,
         address_block: localData.address_block,
         building_or_house: localData.building_or_house,
@@ -152,6 +167,25 @@ export function OrderBandaLargaPFDetailsModal({
       setLoading(true);
       const values = await form.validateFields();
 
+      const addressComplement = {
+        lot: values.address_complement?.lot ?? null,
+        block:
+          values.address_complement?.block ??
+          values.address_complement?.square ??
+          null,
+        floor: values.address_complement?.floor ?? null,
+        square: values.address_complement?.square ?? null,
+        unit_type: values.address_complement?.unit_type ?? null,
+        unit_number: values.address_complement?.unit_number ?? null,
+        building_or_house:
+          values.address_complement?.building_or_house ||
+          localData?.address_complement?.building_or_house ||
+          localData?.building_or_house ||
+          "house",
+        home_complement: values.address_complement?.home_complement ?? null,
+        reference_point: values.address_complement?.reference_point ?? null,
+      };
+
       const normalizedValues = {
         ...values,
         full_name: values.full_name,
@@ -159,19 +193,47 @@ export function OrderBandaLargaPFDetailsModal({
         mother_full_name: values.mother_full_name,
         additional_phone: values.additional_phone,
         address_number: values.address_number,
-        address_complement: values.address_complement,
-        address_lot: values.address_lot,
-        address_reference_point: values.address_reference_point,
+        address_complement: addressComplement,
+        address_lot: addressComplement.lot,
+        address_reference_point: addressComplement.reference_point,
         wants_esim: values.wants_esim,
         line_number_informed: values.line_number_informed,
         line_action: values.line_action,
-        address_floor: values.address_floor,
-        address_block: values.address_block,
-        building_or_house: values.building_or_house,
+        address_floor: addressComplement.floor,
+        address_block: addressComplement.square,
+        building_or_house: addressComplement.building_or_house,
         zip_code: values.zip_code,
         single_zip_code: values.single_zip_code,
-        due_day: values.due_day,
+        due_day: typeof values.due_day === "number" ? String(values.due_day) : values.due_day,
       };
+
+      const selectedExtrasIds = Array.isArray(values.selected_extras) ? values.selected_extras : [];
+      const extraOptions = values.extra_option || {};
+      const selectedPlanObj = planBLPFStock.find((plan: any) => plan.id === values.plan_id);
+      let selected_extras: import("@/interfaces/orderBandaLarga").PlanSelectedExtra[] = [];
+      if (selectedPlanObj && selectedPlanObj.extras) {
+        const extrasArr = selectedPlanObj.extras.non_client as import("@/interfaces/orderBandaLarga").PlanSelectedExtra[] || [];
+        selected_extras = extrasArr
+          .map(function (extra) {
+            const extraTyped = extra as import("@/interfaces/orderBandaLarga").PlanSelectedExtra;
+            if (extraTyped.input_type === 'checkbox' && selectedExtrasIds.includes(extraTyped.id)) {
+              return extraTyped;
+            }
+            if (extraTyped.input_type === 'radio' && extraOptions[extraTyped.id]) {
+              const chosenOption = (extraTyped.options as import("@/interfaces/orderBandaLarga").PlanExtraOption[]).find(function (o) {
+                return o.id === extraOptions[extraTyped.id];
+              });
+              if (chosenOption) {
+                return {
+                  ...extraTyped,
+                  options: [chosenOption],
+                };
+              }
+            }
+            return null;
+          })
+          .filter((x): x is import("@/interfaces/orderBandaLarga").PlanSelectedExtra => x != null) as import("@/interfaces/orderBandaLarga").PlanSelectedExtra[];
+      }
 
       let selectedPlan = planBLPFStock.find(
         (plan: any) => plan.id === normalizedValues.plan_id,
@@ -190,12 +252,18 @@ export function OrderBandaLargaPFDetailsModal({
         ).format("DD/MM/YYYY");
       }
       const formattedData: any = {
-
         ...normalizedValues,
-
+        selected_extras,
       };
 
       if (selectedPlan && selectedPlan.id) {
+        formattedData.plan = {
+          id: selectedPlan.id,
+          name: selectedPlan.plan_name || selectedPlan.name,
+          speed: selectedPlan.plan_speed || selectedPlan.speed,
+          value: selectedPlan.plan_price_to || selectedPlan.price,
+          original_value: selectedPlan.price_summary?.plan_price || selectedPlan.original_price || selectedPlan.original_value,
+        };
         formattedData.itens = [
           {
             plan: {
@@ -206,6 +274,29 @@ export function OrderBandaLargaPFDetailsModal({
             },
           },
         ];
+        let extras_price = 0;
+        (selected_extras as import("@/interfaces/orderBandaLarga").PlanSelectedExtra[]).forEach((extra) => {
+          if (Array.isArray(extra.options)) {
+            (extra.options as import("@/interfaces/orderBandaLarga").PlanExtraOption[]).forEach((opt) => {
+              if (typeof opt.price === 'number') extras_price += opt.price;
+              if (opt.bonus && typeof opt.bonus.price === 'number') extras_price += opt.bonus.price;
+            });
+          }
+        });
+
+        let original_price = 0;
+        if (selectedPlan.pricing && selectedPlan.pricing.base_monthly && typeof selectedPlan.pricing.base_monthly.current_price === 'number') {
+          original_price = selectedPlan.pricing.base_monthly.current_price;
+        } else {
+          original_price = selectedPlan.price_summary?.plan_price || selectedPlan.original_price || selectedPlan.price || 0;
+        }
+        const total_monthly = original_price + extras_price;
+
+        formattedData.price_summary = {
+          extras_price,
+          total_monthly,
+          original_price,
+        };
       }
 
       if (updateOrderData && localData && localData.id) {
@@ -214,14 +305,19 @@ export function OrderBandaLargaPFDetailsModal({
           data: formattedData,
         });
 
-        setLocalData((prev) =>
-          prev
-            ? {
-              ...prev,
-              ...normalizedValues,
-            }
-            : null,
-        );
+        setLocalData((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            ...normalizedValues,
+            selected_extras,
+            price_summary: formattedData.price_summary,
+            plan: {
+              ...prev.plan,
+              ...formattedData.plan,
+            },
+          };
+        });
         setIsEditing(false);
       }
     } catch (error) {

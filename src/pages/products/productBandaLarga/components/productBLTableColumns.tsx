@@ -1,0 +1,75 @@
+
+import { IProduct } from "@/interfaces/products";
+import { defaultOutlineButtonClass } from "@/utils/buttonStyles";
+import { ConfigProvider, Switch, TableColumnsType, Tooltip } from "antd";
+
+export const useAllTableColumns = (updateProductBL: (payload: { id: number; values: Partial<IProduct> }) => void): TableColumnsType<IProduct> => {
+
+    return [
+        {
+            title: "Id",
+            dataIndex: "id",
+            width: 100,
+        },
+
+        {
+            title: "Plano",
+            dataIndex: "name",
+            width: 100,
+        },
+        {
+            title: "Valor ",
+            dataIndex: ["pricing", "base_monthly"],
+            width: 140,
+            render: (_value, record) => {
+                const monthlyCurrentPrice =
+                    typeof record?.pricing?.base_monthly === "number"
+                        ? record.pricing.base_monthly
+                        : Number(record?.pricing?.base_monthly?.current_price ?? 0);
+
+                return `R$ ${monthlyCurrentPrice.toLocaleString("pt-BR", {
+                    minimumFractionDigits: 2,
+                })}`;
+            },
+        },
+        { title: " Tipo", dataIndex: "client_type", width: 100 },
+
+        {
+            title: "",
+            dataIndex: "online",
+            width: 50,
+            render: (_value, record) => (
+                <ConfigProvider
+                    theme={{
+                        components: {
+                            Switch: { colorPrimary: "#da291c", colorPrimaryHover: "#550088" },
+                        },
+                    }}
+                >
+                    <Tooltip
+                        title="Ative ou desative o aparelho da plataforma"
+                        placement="top"
+                        styles={{ body: { fontSize: "12px" } }}
+                    >
+                        <Switch
+                            className={defaultOutlineButtonClass}
+                            size="small"
+                            checked={!!record.online}
+                            onChange={(checked) => {
+                                updateProductBL({
+                                    id: record.id,
+                                    values: {
+                                        online: checked,
+                                        uf: Array.isArray(record.uf) ? record.uf : [],
+                                    },
+                                });
+                            }}
+                        />
+                    </Tooltip>
+                </ConfigProvider>
+            ),
+        },
+    ];
+
+
+}

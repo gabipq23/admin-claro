@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { formatBrowserDisplay, formatOSDisplay } from "@/utils/formatClientEnvironment";
 import { formatPhoneNumber } from "@/utils/formatPhoneNumber";
-import { OrderBandaLargaPF } from "@/interfaces/bandaLargaPF";
+import { OrderBandaLarga } from "@/interfaces/orderBandaLarga";
 import { useNavigate } from "react-router-dom";
 import { getFiltersFromURL } from "../controllers/filterController";
 export const useAllTableColumns = ({
@@ -27,7 +27,7 @@ export const useAllTableColumns = ({
 }: {
     setSelectedAvatar: Dispatch<SetStateAction<string | null>>;
     setIsModalAvatarOpen: Dispatch<SetStateAction<boolean>>;
-}): TableColumnsType<OrderBandaLargaPF> => {
+}): TableColumnsType<OrderBandaLarga> => {
     const navigate = useNavigate();
     const filters = getFiltersFromURL();
 
@@ -194,11 +194,11 @@ export const useAllTableColumns = ({
         },
         {
             title: "Disponibilidade",
-            dataIndex: "availability",
+            dataIndex: ["operators_availability", "claro"],
             width: 120,
-            render: (availability, record) =>
-                availability ? (
-                    record.encontrado_via_range ? (
+            render: (claroAvailability) =>
+                claroAvailability?.available ? (
+                    claroAvailability?.found_via_range ? (
                         <div className="flex items-center justify-center ">
                             <Tooltip
                                 title="Disponível (via range numérico)"
@@ -503,7 +503,7 @@ export const useAllTableColumns = ({
         {
             title: "Telefone",
             dataIndex: "phone",
-            width: 150,
+            width: 180,
             render: (_, record) => {
                 if (!record.phone) return "-";
 
@@ -604,7 +604,7 @@ export const useAllTableColumns = ({
             render: (is_comercial, record) => {
                 const whatsappData = record?.whatsapp;
 
-                // Cenário 1: Telefone inválido
+                // Cenário 1: Telefone invalido
                 const hasInvalidPhoneError =
                     (whatsappData as { erro?: string } | null)?.erro === "Telefone inválido";
 
@@ -617,7 +617,7 @@ export const useAllTableColumns = ({
                     return <div className="flex items-center justify-center">Não</div>;
                 }
 
-                // Casos normais com WhatsApp válido
+                // Casos com wpp valido
                 return (
                     <div className="flex items-center justify-center">
                         {is_comercial === true ? (
@@ -796,41 +796,40 @@ export const useAllTableColumns = ({
             dataIndex: "due_day",
             width: 120,
         },
-
-        {
-            title: "Escolha",
-            dataIndex: "line_action",
-            width: 150,
-            render: (line_action) => {
-                const actionMap: Record<string, string> = {
-                    new_number: "Novo Número",
-                    port_in_to_vivo: "Portabilidade para Vivo",
-                    keep_vivo_number: "Manter Número Vivo",
-                };
-                return actionMap[line_action] || "-";
-            },
-        },
-        {
-            title: "Número Informado",
-            dataIndex: "line_number_informed",
-            width: 150,
-            render: (line_number_informed) => (
-                <span>
-                    {line_number_informed ? formatPhoneNumber(line_number_informed) : "-"}
-                </span>
-            ),
-        },
-        {
-            title: "eSIM",
-            dataIndex: "wants_esim",
-            width: 80,
-            render: (wants_esim) =>
-                wants_esim === true
-                    ? "Sim"
-                    : wants_esim === false
-                        ? "Não"
-                        : "-",
-        },
+        // {
+        //     title: "Escolha",
+        //     dataIndex: "line_action",
+        //     width: 150,
+        //     render: (line_action) => {
+        //         const actionMap: Record<string, string> = {
+        //             new_number: "Novo Número",
+        //             port_in_to_vivo: "Portabilidade para Vivo",
+        //             keep_vivo_number: "Manter Número Vivo",
+        //         };
+        //         return actionMap[line_action] || "-";
+        //     },
+        // },
+        // {
+        //     title: "Número Informado",
+        //     dataIndex: "line_number_informed",
+        //     width: 150,
+        //     render: (line_number_informed) => (
+        //         <span>
+        //             {line_number_informed ? formatPhoneNumber(line_number_informed) : "-"}
+        //         </span>
+        //     ),
+        // },
+        // {
+        //     title: "eSIM",
+        //     dataIndex: "wants_esim",
+        //     width: 80,
+        //     render: (wants_esim) =>
+        //         wants_esim === true
+        //             ? "Sim"
+        //             : wants_esim === false
+        //                 ? "Não"
+        //                 : "-",
+        // },
         {
             title: "CEP",
             dataIndex: "zip_code",
@@ -897,14 +896,6 @@ export const useAllTableColumns = ({
             width: 80,
             render: (addressnumber) => (addressnumber ? addressnumber : "-"),
         },
-        {
-            title: "Complemento",
-            dataIndex: "address_complement",
-            width: 120,
-            render: (address_complement) =>
-                address_complement ? address_complement : "-",
-        },
-
         {
             title: "Bairro",
             dataIndex: "district",

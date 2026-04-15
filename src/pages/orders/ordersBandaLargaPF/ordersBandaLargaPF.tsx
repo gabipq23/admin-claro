@@ -1,5 +1,4 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
 import { ConfigProvider, Modal, Table } from "antd";
 import { customLocale } from "@/utils/customLocale";
 import { useAllOrdersController } from "./controllers/dataController";
@@ -7,27 +6,14 @@ import { useAllOrdersFilterController } from "./controllers/filterController";
 import { useNavigate } from "react-router-dom";
 import { OrderBandaLargaPFDetailsModal } from "./modals/orderBandaLargaPFDetails";
 import { FiltroOrdersBandaLargaPFForm } from "./components/filter";
-import { OrderBandaLargaPF } from "@/interfaces/bandaLargaPF";
+
 import { TableProps } from "antd/lib";
 import { useState } from "react";
+import { OrderBandaLarga } from "@/interfaces/orderBandaLarga";
+import { useProductBLController } from "@/pages/products/productBandaLarga/controllers/dataController";
+
 export default function OrdersBandaLargaPF() {
   const queryClient = new QueryClient();
-  const {
-    ordersBandaLarga,
-
-    showModal,
-    closeModal,
-    isModalOpen,
-    isLoading,
-    orderBandaLargaPF,
-    updateBandaLargaOrder,
-    removeBandaLargaOrder,
-    isRemoveBandaLargaOrderFetching,
-    changeBandaLargaOrderStatus,
-    updateDataIdCRMAndConsultorResponsavel
-  } = useAllOrdersController();
-  const navigate = useNavigate();
-  const planBLPF: any[] = [];
   const {
     control,
     onSubmit,
@@ -46,14 +32,30 @@ export default function OrdersBandaLargaPF() {
     setIsModalAvatarOpen,
     selectedAvatar,
   } = useAllOrdersFilterController();
+  const {
+    ordersBandaLarga,
+    showModal,
+    closeModal,
+    isModalOpen,
+    isLoading,
+    orderBandaLargaPF,
+    updateBandaLargaOrder,
+    removeBandaLargaOrder,
+    isRemoveBandaLargaOrderFetching,
+    changeBandaLargaOrderStatus,
+    updateDataIdCRMAndConsultorResponsavel
+  } = useAllOrdersController();
+  const navigate = useNavigate();
+  const { productsBL } = useProductBLController();
 
-  const totalItems = 0;
+  const totalItems =
+    ordersBandaLarga?.total ?? orderBandaLargaPF?.length ?? 0;
 
-  const rowClassName = (record: OrderBandaLargaPF) => {
+  const rowClassName = (record: OrderBandaLarga) => {
     const hasAvaiability = record?.availability;
     const isCoveredByRange = record?.found_via_range;
     const hasUnicCep = record?.single_zip_code;
-    if (record?.status === "FECHADO") {
+    if (record?.status === "FECHADO" || record?.status === "fechado") {
       if (
         hasAvaiability === false ||
         hasAvaiability === null ||
@@ -76,7 +78,7 @@ export default function OrdersBandaLargaPF() {
       setSelectedRowKeys(newSelectedRowKeys);
     },
   };
-  console.log(orderBandaLargaPF)
+
   return (
     <>
       <QueryClientProvider client={queryClient}>
@@ -95,7 +97,7 @@ export default function OrdersBandaLargaPF() {
                 onClear={clearFilters}
                 statusOptions={ordersBandaLarga?.status_pos_venda_enum}
                 orderBandaLargaPF={orderBandaLargaPF}
-                planBLPFStock={planBLPF}
+                planBLPFStock={productsBL}
                 allColumnOptions={allColumnOptions}
                 visibleColumns={visibleColumns}
                 handleColumnsChange={handleColumnsChange}
@@ -163,7 +165,7 @@ export default function OrdersBandaLargaPF() {
           {/* Modal */}
           <OrderBandaLargaPFDetailsModal
             statusOptions={ordersBandaLarga?.status_pos_venda_enum}
-            planBLPFStock={planBLPF}
+            planBLPFStock={productsBL}
             updateOrderData={updateBandaLargaOrder}
             isModalOpen={isModalOpen}
             closeModal={closeModal}
