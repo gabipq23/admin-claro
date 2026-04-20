@@ -1,34 +1,36 @@
-import { LocalStorageKeys, LocalStorageService } from "@/services/storage";
 import axios from "axios";
 
 export const apiPurchase = axios.create({
   baseURL: "https://evolution.bigdates.com.br:3720",
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
 });
-const attachAuthToken = (config: any) => {
-  const localStorageService = new LocalStorageService();
-  const token = localStorageService.getItem(LocalStorageKeys.accessToken);
+// const attachAuthToken = (config: any) => {
+//   const localStorageService = new LocalStorageService();
+//   const token = localStorageService.getItem(LocalStorageKeys.accessToken);
 
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+//   if (token) {
+//     config.headers.Authorization = `Bearer ${token}`;
+//   }
 
-  return config;
-};
+//   return config;
+// };
 
 const forceLogoutAndRedirect = () => {
-  const localStorageService = new LocalStorageService();
-  localStorageService.removeItem(LocalStorageKeys.accessToken);
-  localStorageService.removeItem(LocalStorageKeys.user);
+  // const localStorageService = new LocalStorageService();
+  // localStorageService.removeItem(LocalStorageKeys.accessToken);
+  // localStorageService.removeItem(LocalStorageKeys.user);
+
+  localStorage.removeItem("claro@user");
 
   if (window.location.pathname !== "/admin") {
     window.location.replace("/admin");
   }
 };
 
-apiPurchase.interceptors.request.use(attachAuthToken);
+// apiPurchase.interceptors.request.use(attachAuthToken);
 apiPurchase.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -45,6 +47,13 @@ apiPurchase.interceptors.response.use(
 );
 
 // Tools
+export const apiAvailability = axios.create({
+  baseURL: "https://evolution.bigdates.com.br:3620",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
 export const apiBase2b = axios.create({
   baseURL: "https://base2b.online:3000/api/v1",
   headers: {
