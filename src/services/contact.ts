@@ -30,7 +30,7 @@ export class ContactService {
     order?: string;
     status?: string;
   }): Promise<IContactResponse> {
-    const res = await apiPurchase.get(`/messages`, {
+    const res = await apiPurchase.get(`/telecom/claro/messages`, {
       params: {
         page,
         data_to,
@@ -56,12 +56,12 @@ export class ContactService {
     id: number;
     status: "LIDA" | "RESPONDIDA";
   }) {
-    return apiPurchase.patch(`/messages/${id}/status`, {
+    return apiPurchase.patch(`/telecom/claro/messages/${id}/status`, {
       status: status,
     });
   }
 
   async removeContact(id: number) {
-    await apiPurchase.delete(`/messages/${id}`);
+    await apiPurchase.delete(`/telecom/claro/messages/${id}`);
   }
 }
