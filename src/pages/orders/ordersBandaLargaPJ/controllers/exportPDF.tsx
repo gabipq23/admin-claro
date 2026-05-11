@@ -218,7 +218,9 @@ export const generatePDF = async (order: OrderBandaLarga | undefined) => {
           `Metodo de Pagamento: ${paymentMethodLabel}`,
           `Nome do Banco: ${order.bank_name || "-"}`,
           `Agencia: ${order.bank_branch || "-"}`,
-          `Numero da Conta: ${order.bank_account_number || "-"}`,
+          `Numero da Conta: ${order.bank_account_number || "-"}`, `Titular da Conta: ${order.bank_account_holder_name || "-"}`,
+          `CPF do Titular: ${formatCPF(order.bank_account_holder_cpf || "") || "-"}`,
+
         ],
         style: "content",
       },

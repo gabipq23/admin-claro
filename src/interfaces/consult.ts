@@ -34,6 +34,7 @@ export interface ICompany {
   bank_name: string | null;
   bank_branch: string | null;
   bank_account_number: string | null;
+
   has_fixed_line_portability: boolean | null;
   fixed_line_number_to_port: string | null;
   wants_fixed_ip: boolean | null;
