@@ -163,7 +163,9 @@ export function useProductBLController() {
 
   const productsBL = (productBLQuery?.products || []).filter(
     (product) =>
-      product.company === "CLARO" && product.category === "Banda Larga",
+      product.company === "CLARO" &&
+      (product.category === "Banda Larga" ||
+        product.category === "banda-larga"),
   );
 
   return {
